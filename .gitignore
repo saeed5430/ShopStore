@@ -1,0 +1,13 @@
+opencode.json
+AGENT.md
+Plans/
+
+# Backend
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Frontend
+node_modules/
+dist/
