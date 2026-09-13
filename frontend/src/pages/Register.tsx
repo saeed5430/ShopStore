@@ -1,14 +1,26 @@
-import { useState } from "react"
 import {
-  CheckCircle2,
-  Eye,
-  EyeOff,
+  AlertCircle,
+  LoaderCircle,
   LogIn,
   Store,
   UserPlus,
 } from "lucide-react"
-import { Link } from "react-router-dom"
+
+import { useState } from "react"
+import axios from "axios"
+import { Link, useNavigate } from "react-router-dom"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm, type SubmitHandler } from "react-hook-form"
+import { z } from "zod"
+
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert"
+
 import { Button } from "@/components/ui/button"
+
 import {
   Card,
   CardContent,
@@ -17,13 +29,236 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+
+import {
+  FormField,
+  PasswordField,
+} from "@/components/FormField"
+
+import { cn } from "@/lib/utils"
+import { register as registerUser } from "@/services/api"
+
+
+const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_.@+-]{2,149}$/
+
+const PERSIAN_TEXT_REGEX =
+  /^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u200C\s]+$/
+
+const MOBILE_REGEX = /^09\d{9}$/
+
+const LANDLINE_REGEX = /^0\d{2}-?\d{8}$/
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+
+const registerSchema = z
+  .object({
+
+    firstName: z
+      .string()
+      .trim()
+      .min(1, "نام را وارد کنید")
+      .min(2, "نام باید حداقل ۲ حرف باشد")
+      .max(15, "نام باید حداکثر 15 حرف باشد")
+      .regex(PERSIAN_TEXT_REGEX, "نام باید فارسی باشد"),
+
+
+    lastName: z
+      .string()
+      .trim()
+      .min(1, "نام خانوادگی را وارد کنید")
+      .min(2, "نام خانوادگی باید حداقل ۲ حرف باشد")
+      .max(15, "نام خانوادگی باید حداکثر 15 حرف باشد")
+      .regex(PERSIAN_TEXT_REGEX, "نام خانوادگی باید فارسی باشد"),
+
+
+    username: z
+      .string()
+      .trim()
+      .min(1, "نام کاربری را وارد کنید")
+      .min(3, "نام کاربری باید حداقل ۳ حرف باشد")
+      .max(10, "نام کاربری باید حداکثر 10 حرف باشد")
+      .regex(
+        USERNAME_REGEX,
+        "نام کاربری فقط شامل حروف انگلیسی، عدد و . _ @ + - باشد"
+      ),
+
+
+    email: z
+      .string()
+      .trim()
+      .refine(
+        (value) => value === "" || EMAIL_REGEX.test(value),
+        "ایمیل معتبر نیست"
+      )
+      .transform((value) => (value === "" ? undefined : value)),
+
+
+    address: z
+      .string()
+      .trim()
+      .refine(
+        (value) =>
+          value === "" ||
+          (value.length >= 10 &&
+            value.length <= 500 &&
+            PERSIAN_TEXT_REGEX.test(value)),
+        "آدرس باید فارسی و بین ۱۰ تا ۵۰۰ حرف باشد"
+      )
+      .transform((value) => (value === "" ? undefined : value)),
+
+
+    landline: z
+      .string()
+      .trim()
+      .refine(
+        (value) => value === "" || LANDLINE_REGEX.test(value),
+        "تلفن ثابت معتبر نیست، مثل 021-12345678"
+      )
+      .transform((value) => (value === "" ? undefined : value)),
+
+
+    mobile: z
+      .string()
+      .trim()
+      .min(1, "تلفن همراه را وارد کنید")
+      .regex(MOBILE_REGEX, "شماره همراه معتبر نیست"),
+
+
+    password: z
+      .string()
+      .min(1, "رمز عبور را وارد کنید")
+      .min(8, "رمز عبور باید حداقل ۸ حرف باشد")
+      .max(15, "رمز عبور باید حداکثر 15 حرف باشد"),
+
+
+    confirmPassword: z
+      .string()
+      .min(1, "تکرار رمز عبور را وارد کنید"),
+
+  })
+  .refine(
+    (data) => data.password === data.confirmPassword,
+    {
+      message: "تکرار رمز عبور با رمز عبور یکسان نیست",
+      path: ["confirmPassword"],
+    }
+  )
+
+
+type RegisterFormInput = z.input<typeof registerSchema>
+
+type RegisterFormValues = z.output<typeof registerSchema>
+
+
+const digitsOnly = (value:string) =>
+  value.replace(/\D/g,"")
+
+
+const getBackendError = (error:unknown)=>{
+
+  if(!axios.isAxiosError(error)){
+    return "خطای ناشناخته‌ای رخ داد."
+  }
+
+  const data = error.response?.data
+
+  if(!data){
+    return "ارتباط با سرور برقرار نشد."
+  }
+
+  const messages = Object.values(data)
+    .flat()
+    .filter(
+      (item):item is string =>
+      typeof item === "string"
+    )
+
+  return messages.length
+    ? messages.join(" ")
+    : "ثبت‌نام انجام نشد."
+}
+
+
+const RequiredLabel = ({
+  children
+}:{
+  children:React.ReactNode
+})=>(
+  <>
+    <span className="mr-1 font-bold text-black">
+      *
+    </span>
+    {children}
+  </>
+)
+
 
 export default function Register() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
+
+  const navigate = useNavigate()
+
+  const [backendError, setBackendError] =
+    useState<string | null>(null)
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    clearErrors,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormInput, unknown, RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      username: "",
+      email: "",
+      address: "",
+      landline: "",
+      mobile: "",
+      password: "",
+      confirmPassword: "",
+    },
+  })
+
+  const usernameValue = watch("username")
+  const isUsernameTaken = false
+
+  const onSubmit: SubmitHandler<RegisterFormValues> =
+    async (data) => {
+
+      setBackendError(null)
+
+      try {
+        await registerUser({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          username: data.username,
+          email: data.email ?? "",
+          address: data.address ?? "",
+          landline: data.landline ?? "",
+          phone: data.mobile,
+          password: data.password,
+        })
+
+        navigate("/register-success", {
+          replace: true,
+          state: {
+            message: "ثبت‌نام شما با موفقیت انجام شد.",
+          },
+        })
+      } catch (error) {
+        setBackendError(getBackendError(error))
+      }
+    }
+
+  const clearOnChange =
+    (name: keyof RegisterFormInput) =>
+    () =>
+      clearErrors(name)
 
   return (
     <div
@@ -31,181 +266,210 @@ export default function Register() {
       className="flex min-h-dvh items-center justify-center bg-white px-4 py-10 font-fa text-neutral-950"
     >
       <div className="w-full max-w-sm sm:max-w-md">
+
         <div className="mb-4 flex flex-col items-center gap-1.5 text-center">
           <span className="flex size-11 items-center justify-center rounded-xl bg-neutral-950 text-white">
             <Store className="size-5" />
           </span>
-          <p className="text-lg font-extrabold">فروشگاه ستیا</p>
+
+          <p className="text-lg font-extrabold">
+            فروشگاه ستیا
+          </p>
         </div>
 
         <Card className="shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+
           <CardHeader className="text-center">
             <CardTitle className="text-xl font-bold">
               ساخت حساب کاربری
             </CardTitle>
-            <CardDescription>خوش آمدید! اطلاعات خود را وارد کنید</CardDescription>
+
+            <CardDescription>
+              خوش آمدید! اطلاعات خود را وارد کنید
+            </CardDescription>
           </CardHeader>
+
           <CardContent className="grid gap-5">
+
+            {backendError && (
+              <Alert variant="destructive">
+                <AlertCircle />
+                <AlertTitle>خطا در ثبت‌نام</AlertTitle>
+                <AlertDescription>
+                  {backendError}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <form
               className="grid gap-4"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleSubmit(onSubmit)}
+              noValidate
             >
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="first-name">نام</Label>
-                  <Input
-                    id="first-name"
-                    name="first-name"
-                    placeholder="مثلاً سارا"
-                    autoComplete="given-name"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="last-name">نام خانوادگی</Label>
-                  <Input
-                    id="last-name"
-                    name="last-name"
-                    placeholder="مثلاً احمدی"
-                    autoComplete="family-name"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="username">نام کاربری</Label>
-                  <span
-                    id="username-status"
-                    className="flex items-center gap-1 text-xs font-medium text-emerald-600"
-                  >
-                    <CheckCircle2 className="size-3.5" />
-                    این نام کاربری آزاد است
-                  </span>
-                </div>
-                <Input
-                  id="username"
-                  name="username"
-                  dir="ltr"
-                  placeholder="username"
-                  autoComplete="username"
-                  aria-describedby="username-status"
-                  className="text-left"
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="email">ایمیل</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  dir="ltr"
-                  placeholder="example@mail.com"
-                  autoComplete="email"
-                  inputMode="email"
-                  className="text-left"
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="address">آدرس</Label>
-                <Textarea
-                  id="address"
-                  name="address"
-                  rows={2}
-                  placeholder="استان، شهر، خیابان، پلاک"
-                  autoComplete="street-address"
-                />
-              </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="phone">تلفن ثابت</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    dir="ltr"
-                    placeholder="021-12345678"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    className="text-left"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="mobile">تلفن همراه</Label>
-                  <Input
-                    id="mobile"
-                    name="mobile"
-                    dir="ltr"
-                    placeholder="0912 345 6789"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    className="text-left"
-                  />
-                </div>
+
+                <FormField
+                  id="firstName"
+                  label={<RequiredLabel>نام</RequiredLabel>}
+                  error={errors.firstName?.message}
+                  input={{
+                    placeholder: "مثلاً سارا",
+                    autoComplete: "given-name",
+                    ...register("firstName", {
+                      onChange: clearOnChange("firstName"),
+                    }),
+                  }}
+                />
+
+                <FormField
+                  id="lastName"
+                  label={<RequiredLabel>نام خانوادگی</RequiredLabel>}
+                  error={errors.lastName?.message}
+                  input={{
+                    placeholder: "مثلاً احمدی",
+                    autoComplete: "family-name",
+                    ...register("lastName", {
+                      onChange: clearOnChange("lastName"),
+                    }),
+                  }}
+                />
+
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="password">رمز عبور</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    name="password"
-                    dir="ltr"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    className="pr-10 text-left"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? "پنهان کردن رمز" : "نمایش رمز"}
-                    className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1.5 text-neutral-400 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-neutral-950 cursor-pointer"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
-                </div>
+              <FormField
+                id="username"
+                label={<RequiredLabel>نام کاربری</RequiredLabel>}
+                error={errors.username?.message}
+                labelExtra={
+                  usernameValue && !errors.username ? (
+                    <span
+                      className={cn(
+                        "flex items-center gap-1 text-xs font-medium",
+                        isUsernameTaken
+                          ? "text-destructive"
+                          : "text-emerald-600"
+                      )}
+                    >
+                    </span>
+                  ) : undefined
+                }
+                input={{
+                  dir: "ltr",
+                  placeholder: "username",
+                  autoComplete: "username",
+                  className: "text-left",
+                  ...register("username", {
+                    onChange: clearOnChange("username"),
+                  }),
+                }}
+              />
+
+              <FormField
+                id="email"
+                label="ایمیل"
+                error={errors.email?.message}
+                input={{
+                  type: "email",
+                  dir: "ltr",
+                  placeholder: "example@mail.com",
+                  autoComplete: "email",
+                  inputMode: "email",
+                  className: "text-left",
+                  ...register("email", {
+                    onChange: clearOnChange("email"),
+                  }),
+                }}
+              />
+
+              <FormField
+                id="address"
+                label="آدرس"
+                error={errors.address?.message}
+                textarea={{
+                  rows: 2,
+                  placeholder: "استان، شهر، خیابان، پلاک",
+                  autoComplete: "street-address",
+                  ...register("address", {
+                    onChange: clearOnChange("address"),
+                  }),
+                }}
+              />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+
+                <FormField
+                  id="landline"
+                  label="تلفن ثابت"
+                  error={errors.landline?.message}
+                  input={{
+                    dir: "ltr",
+                    placeholder: "02166435423",
+                    inputMode: "tel",
+                    autoComplete: "tel",
+                    className: "text-left",
+                    ...register("landline", {
+                      onChange: clearOnChange("landline"),
+                      setValueAs: digitsOnly,
+                    }),
+                  }}
+                />
+
+                <FormField
+                  id="mobile"
+                  label={<RequiredLabel>تلفن همراه</RequiredLabel>}
+                  error={errors.mobile?.message}
+                  input={{
+                    dir: "ltr",
+                    placeholder: "09123456789",
+                    inputMode: "tel",
+                    autoComplete: "tel",
+                    className: "text-left",
+                    ...register("mobile", {
+                      onChange: clearOnChange("mobile"),
+                      setValueAs: digitsOnly,
+                    }),
+                  }}
+                />
+
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="confirm-password">تکرار رمز عبور</Label>
-                <div className="relative">
-                  <Input
-                    id="confirm-password"
-                    name="confirm-password"
-                    dir="ltr"
-                    type={showConfirm ? "text" : "password"}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    className="pr-10 text-left"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirm((v) => !v)}
-                    aria-label={showConfirm ? "پنهان کردن رمز" : "نمایش رمز"}
-                    className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1.5 text-neutral-400 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-neutral-950 cursor-pointer"
-                  >
-                    {showConfirm ? (
-                      <EyeOff className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
+              <PasswordField
+                id="password"
+                label={<RequiredLabel>رمز عبور</RequiredLabel>}
+                error={errors.password?.message}
+                input={{
+                  ...register("password", {
+                    onChange: clearOnChange("password"),
+                  }),
+                }}
+              />
+
+              <PasswordField
+                id="confirmPassword"
+                label={<RequiredLabel>تکرار رمز عبور</RequiredLabel>}
+                error={errors.confirmPassword?.message}
+                input={{
+                  ...register("confirmPassword", {
+                    onChange: clearOnChange("confirmPassword"),
+                  }),
+                }}
+              />
 
               <Button
                 type="submit"
+                disabled={isSubmitting}
                 className="mt-1 w-full cursor-pointer bg-neutral-950 text-white hover:bg-neutral-800"
               >
-                <UserPlus />
-                ثبت‌نام
+                {isSubmitting ? (
+                  <LoaderCircle className="animate-spin" />
+                ) : (
+                  <UserPlus />
+                )}
+
+                {isSubmitting ? "در حال ثبت‌نام..." : "ثبت‌نام"}
               </Button>
+
             </form>
 
             <div className="flex items-center gap-3 text-xs text-neutral-400">
@@ -225,13 +489,17 @@ export default function Register() {
                 ورود به حساب
               </Link>
             </Button>
+
           </CardContent>
+
           <CardFooter className="justify-center">
             <p className="text-center text-xs leading-relaxed text-neutral-500">
               با ثبت‌نام در استورشاپ، قوانین و مقررات را می‌پذیرید.
             </p>
           </CardFooter>
+
         </Card>
+
       </div>
     </div>
   )
