@@ -34,12 +34,6 @@ function HeroCardItem({
       </div>
 
       {/* image */}
-      <img
-        src={card.image}
-        alt={card.imageAlt}
-        loading="lazy"
-        className={`absolute ${card.imageClassName}`}
-      />
     </div>
   )
 }
@@ -54,10 +48,7 @@ function TallCard({ card, className }: { card: HeroCard; className?: string }) {
       {imageFirst ? (
         <>
           <img
-            src={card.image}
-            alt={card.imageAlt}
             loading="lazy"
-            className={`absolute ${card.imageClassName}`}
           />
           <div className="relative z-10 mt-auto flex flex-col gap-2 text-gray-900">
             <h3 className="text-lg font-extrabold sm:text-xl">{card.title}</h3>
@@ -109,10 +100,7 @@ export default function BentoHero() {
                 </button>
               </div>
               <img
-                src={card.image}
-                alt={card.imageAlt}
                 loading="lazy"
-                className={`absolute ${card.imageClassName}`}
               />
             </div>
           ))}

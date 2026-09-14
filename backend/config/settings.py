@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'accounts',
+    'productions',
     'corsheaders'
 ]
 
@@ -116,15 +117,15 @@ DATABASES = {
 # Cache (Redis)
 # https://docs.djangoproject.com/en/5.2/topics/cache/
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/1'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         },
+#     }
+# }
 
 
 # Password validation
@@ -174,3 +175,6 @@ AUTH_USER_MODEL = "accounts.User"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

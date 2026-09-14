@@ -1,0 +1,14 @@
+export interface Product {
+  id: number
+  name: string
+  slug: string
+  category: string
+  image: string | null
+  price: number | null
+}
+export interface PaginatedProducts {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Product[]
+}

@@ -63,7 +63,7 @@ export default function Footer() {
           ))}
 
           {/* dark banner */}
-          <div className="col-span-2 flex flex-col justify-between gap-4 rounded-3xl bg-gray-800 p-6 text-white md:col-span-4 lg:col-span-1 lg:row-span-3">
+          {/* <div className="col-span-2 flex flex-col justify-between gap-4 rounded-3xl bg-gray-800 p-6 text-white md:col-span-4 lg:col-span-1 lg:row-span-3">
             <div className="grid gap-2">
               <h3 className="text-lg font-extrabold">
                 صفحات آماده‌ی قالب فروشگاهی
@@ -80,7 +80,7 @@ export default function Footer() {
                 className="aspect-[16/10] w-full object-cover opacity-80"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* remaining link groups */}
           {footerLinkGroups.slice(3).map((group) => (

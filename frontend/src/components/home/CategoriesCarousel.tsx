@@ -62,8 +62,6 @@ export default function CategoriesCarousel() {
             >
               <span className="flex size-28 items-center justify-center overflow-hidden rounded-full bg-gray-100 transition-shadow group-hover:shadow-md sm:size-32 sm:w-32">
                 <img
-                  src={category.image}
-                  alt={category.name}
                   loading="lazy"
                   className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
