@@ -24,6 +24,7 @@ export const login = async (data: LoginData) => {
   return response.data
 }
 
+
 export const getProducts = async (
   page: number = 1
 ): Promise<PaginatedProducts> => {
