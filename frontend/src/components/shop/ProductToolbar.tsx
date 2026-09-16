@@ -9,7 +9,7 @@ import {
 
 export const sortOptions = [
   { value: "default", label: "پیش‌فرض" },
-  { value: "cheapest", label: "ارزان‌ترین" },
+  { value: "cheap", label: "ارزان‌ترین" },
   { value: "expensive", label: "گران‌ترین" },
 ]
 
@@ -36,7 +36,7 @@ export default function ProductToolbar({
           <SelectTrigger className="w-36 border-gray-200 bg-white text-gray-900">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="border-gray-200 bg-white text-gray-900">
+          <SelectContent className="border-gray-200 bg-white text-gray-900" style={{ direction: "rtl" }}>
             {sortOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}

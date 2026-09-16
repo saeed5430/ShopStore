@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ProductVariant
+from .models import ProductVariant , Category
 
 
 class ProductListSerializer(serializers.ModelSerializer):
@@ -48,3 +48,13 @@ class ProductListSerializer(serializers.ModelSerializer):
             )
 
         return None
+
+class CategoryListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+
+        fields = [
+            "id",
+            "name",
+        ]

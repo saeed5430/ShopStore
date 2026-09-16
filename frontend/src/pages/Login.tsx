@@ -1,9 +1,11 @@
 import { Info, LoaderCircle, LogIn, Store, UserPlus } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { z } from "zod"
-
+import axios from "axios"
+import { toast } from "sonner"
+import { login } from "@/services/api"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,7 +19,6 @@ import {
 import { FormField, PasswordField } from "@/components/FormField"
 
 const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_.@+-]{2,149}$/
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const loginSchema = z.object({
@@ -30,7 +31,6 @@ const loginSchema = z.object({
         USERNAME_REGEX.test(value) || EMAIL_REGEX.test(value),
       "نام کاربری یا ایمیل معتبر نیست",
     ),
-
   password: z
     .string()
     .min(1, "رمز عبور را وارد کنید"),
@@ -39,29 +39,43 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function Login() {
+  const navigate = useNavigate()
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-
-    // Validation when the user submits for the first time.
     mode: "onSubmit",
-
-    // After the first submit, validate again whenever
-    // the user changes a field.
     reValidateMode: "onChange",
-
     defaultValues: {
       identifier: "",
       password: "",
     },
   })
 
-  const onSubmit: SubmitHandler<LoginFormValues> = (data) => {
-    console.log("VALID:", data)
+const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
+  try {
+    const response = await login({
+      username: data.identifier,
+      password: data.password,
+    })
+
+    toast.success(response.message)
+
+    setTimeout(() => {
+      navigate("/home")
+    }, 2000)
+  } catch (error) {
+    const message = axios.isAxiosError(error)
+      ? (error.response?.data?.message as string | undefined) ??
+        (error.response?.data?.detail as string | undefined) ??
+        "نام کاربری یا رمز عبور اشتباه است."
+      : "نام کاربری یا رمز عبور اشتباه است."
+    toast.error(message)
   }
+}
 
   return (
     <div
@@ -73,7 +87,6 @@ export default function Login() {
           <span className="flex size-11 items-center justify-center rounded-xl bg-neutral-950 text-white">
             <Store className="size-5" />
           </span>
-
           <p className="text-lg font-extrabold">
             فروشگاه ستیا
           </p>
@@ -84,7 +97,6 @@ export default function Login() {
             <CardTitle className="text-xl font-bold">
               ورود به حساب
             </CardTitle>
-
             <CardDescription>
               خوش آمدید! وارد شوید
             </CardDescription>
@@ -93,11 +105,9 @@ export default function Login() {
           <CardContent className="grid gap-5">
             <Alert>
               <Info />
-
               <AlertTitle>
                 حساب کاربری ندارید؟
               </AlertTitle>
-
               <AlertDescription>
                 اگر هنوز ثبت‌نام نکرده‌اید، لطفا ابتدا یک حساب بسازید.
               </AlertDescription>
@@ -114,7 +124,8 @@ export default function Login() {
                 error={errors.identifier?.message}
                 input={{
                   dir: "ltr",
-                  placeholder: "username یا example@mail.com",
+                  placeholder:
+                    "username یا example@mail.com",
                   autoComplete: "username",
                   className: "text-left",
                   ...register("identifier"),
@@ -126,7 +137,8 @@ export default function Login() {
                 label="رمز عبور"
                 error={errors.password?.message}
                 input={{
-                  autoComplete: "current-password",
+                  autoComplete:
+                    "current-password",
                   ...register("password"),
                 }}
               />
@@ -136,23 +148,24 @@ export default function Login() {
                 disabled={isSubmitting}
                 className="mt-1 w-full cursor-pointer bg-neutral-950 text-white hover:bg-neutral-800"
               >
-                {isSubmitting ? (
-                  <LoaderCircle className="animate-spin" />
-                ) : (
-                  <LogIn />
-                )}
-
-                {isSubmitting
-                  ? "در حال ورود..."
-                  : "ورود به حساب"}
+                {
+                  isSubmitting ? (
+                    <LoaderCircle className="animate-spin" />
+                  ) : (
+                    <LogIn />
+                  )
+                }
+                {
+                  isSubmitting
+                    ? "در حال ورود..."
+                    : "ورود به حساب"
+                }
               </Button>
             </form>
 
             <div className="flex items-center gap-3 text-xs text-neutral-400">
               <span className="h-px flex-1 bg-neutral-200" />
-
               یا
-
               <span className="h-px flex-1 bg-neutral-200" />
             </div>
 

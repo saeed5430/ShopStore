@@ -3,6 +3,8 @@ from django.contrib.auth.models import Group
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 import re
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -138,3 +140,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.groups.add(customer_group)
 
         return user
+
+
+class LoginSerializer(TokenObtainPairSerializer):
+
+    default_error_messages = {
+        "no_active_account": "نام کاربری یا رمز عبور اشتباه است."
+    }

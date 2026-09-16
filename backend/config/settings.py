@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'accounts',
     'productions',
-    'corsheaders'
+    'corsheaders',
+    'orders'
 ]
 
 MIDDLEWARE = [
@@ -94,9 +95,19 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('JWT_ACCESS_MINUTES', '30'))),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv('JWT_REFRESH_DAYS', '7'))),
+    'ACCESS_TOKEN_LIFETIME': timedelta(
+        minutes=int(os.getenv('JWT_ACCESS_MINUTES', '30'))
+    ),
+
+    'REFRESH_TOKEN_LIFETIME': timedelta(
+        days=int(os.getenv('JWT_REFRESH_DAYS', '7'))
+    ),
+
     'ROTATE_REFRESH_TOKENS': True,
+
+    'ALGORITHM': 'HS256',
+
+    'SIGNING_KEY': os.getenv('JWT_SIGNING_KEY'),
 }
 
 
@@ -175,6 +186,11 @@ AUTH_USER_MODEL = "accounts.User"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
+
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

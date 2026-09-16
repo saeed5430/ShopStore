@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { ShoppingBag } from "lucide-react"
 
 import Header from "@/components/home/Header"
@@ -9,114 +9,250 @@ import ProductGrid from "@/components/shop/ProductGrid"
 import ProductPagination from "@/components/shop/ProductPagination"
 import ProductToolbar from "@/components/shop/ProductToolbar"
 
-import { getProducts } from "@/services/api"
-import type { Product } from "@/types/product"
+import { getCategories, getProducts } from "@/services/api"
+
+import type { Product, Category } from "@/types/product"
+
 
 const PAGE_SIZE = 9
 const ALL = "all"
 
+
 export default function ShopPage() {
+
   const [category, setCategory] = useState(ALL)
-  const [sort, setSort] = useState("default")
+
+  const [price, setPrice] = useState("default")
+
+  const [categories, setCategories] = useState<Category[]>([])
+
   const [page, setPage] = useState(1)
+
   const [products, setProducts] = useState<Product[]>([])
+
   const [nextPage, setNextPage] = useState<string | null>(null)
+
   const [previousPage, setPreviousPage] = useState<string | null>(null)
+
   const [total, setTotal] = useState(0)
+
   const [loading, setLoading] = useState(false)
 
+
+
+  // Fetch categories
   useEffect(() => {
-    const fetchProducts = async () => {
+
+    const fetchCategories = async () => {
+
       try {
-        setLoading(true)
 
-        const data = await getProducts(page)
+        const data = await getCategories()
 
-        setProducts(data.results)
-        setTotal(data.count)
-        setNextPage(data.next)
-        setPreviousPage(data.previous)
+        setCategories(data)
+
       } catch (error) {
-        console.error("Failed to fetch products:", error)
-      } finally {
-        setLoading(false)
+
+        console.error(
+          "Failed to fetch categories:",
+          error
+        )
+
       }
+
     }
 
-    fetchProducts()
-  }, [page])
 
-  const visibleProducts = useMemo(() => {
-    return [...products].sort((a, b) => {
-      switch (sort) {
-        case "cheapest":
-          return (a.price ?? 0) - (b.price ?? 0)
-        case "expensive":
-          return (b.price ?? 0) - (a.price ?? 0)
-        default:
-          return 0
+    fetchCategories()
+
+  }, [])
+
+
+
+  // Fetch products
+  useEffect(() => {
+
+    const fetchProducts = async () => {
+
+      try {
+
+        setLoading(true)
+
+
+        const data = await getProducts(
+          page,
+          category !== ALL ? category : undefined,
+          price !== "default"
+            ? price as "cheap" | "expensive"
+            : undefined
+        )
+
+
+        setProducts(data.results)
+
+        setTotal(data.count)
+
+        setNextPage(data.next)
+
+        setPreviousPage(data.previous)
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to fetch products:",
+          error
+        )
+
+      } finally {
+
+        setLoading(false)
+
       }
-    })
-  }, [products, sort])
+
+    }
+
+
+    fetchProducts()
+
+
+  }, [page, category, price])
+
+
 
   const handleCategoryChange = (value: string) => {
+
     setCategory(value)
+
     setPage(1)
+
   }
+
+
+
+  const handlePriceChange = (value: string) => {
+
+    setPrice(value)
+
+    setPage(1)
+
+  }
+
+
 
   const handleClearAll = () => {
+
     setCategory(ALL)
+
+    setPrice("default")
+
     setPage(1)
+
   }
 
+
+
   return (
-    <div dir="rtl" className="flex min-h-dvh flex-col bg-white font-fa text-gray-900">
+
+    <div
+      dir="rtl"
+      className="flex min-h-dvh flex-col bg-white font-fa text-gray-900"
+    >
+
       <Header />
 
+
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10">
+
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+
+
           <FilterSidebar
             category={category}
+            categories={categories}
             onCategoryChange={handleCategoryChange}
             onClearAll={handleClearAll}
           />
 
+
           <div className="grid min-w-0 content-start gap-6">
+
+
             <ProductToolbar
+
               total={total}
-              sort={sort}
-              onSortChange={setSort}
+
+              sort={price}
+
+              onSortChange={handlePriceChange}
+
             />
+
+
 
             {loading ? (
+
               <div className="flex justify-center py-10">
+
                 در حال بارگذاری محصولات...
+
               </div>
+
             ) : (
-              <ProductGrid products={visibleProducts} />
+
+              <ProductGrid products={products} />
+
             )}
 
+
+
             <button
+
               type="button"
+
               className="mx-auto flex cursor-pointer items-center justify-center gap-2 rounded-full bg-black px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+
             >
+
               <ShoppingBag className="size-4" />
+
               همین حالا بخرید
+
             </button>
 
+
+
             <ProductPagination
+
               page={page}
+
               pageSize={PAGE_SIZE}
+
               total={total}
+
               hasNext={Boolean(nextPage)}
+
               hasPrevious={Boolean(previousPage)}
+
               onPageChange={setPage}
+
             />
+
+
           </div>
+
+
         </div>
+
+
       </main>
 
+
       <Footer />
+
+
     </div>
+
   )
+
 }

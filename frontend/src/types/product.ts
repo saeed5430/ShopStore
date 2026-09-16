@@ -12,3 +12,8 @@ export interface PaginatedProducts {
   previous: string | null
   results: Product[]
 }
+
+export interface Category {
+  id: number
+  name: string
+}
