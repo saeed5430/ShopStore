@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button"
 
 import FilterCategory from "@/components/shop/FilterCategory"
+import PriceRangeSlider from "@/components/shop/PriceRangeSlider"
+import FilterSwatch from "@/components/shop/FilterSwatch"
 
 import type { Category } from "@/types/product"
 
@@ -42,11 +44,19 @@ export default function FilterSidebar({
       </div>
 
     
-      <FilterCategory
-        value={category}
-        categories={categories}
-        onChange={onCategoryChange}
-      />
+      <div className="grid gap-6">
+
+        <FilterCategory
+          value={category}
+          categories={categories}
+          onChange={onCategoryChange}
+        />
+
+        <PriceRangeSlider />
+
+        <FilterSwatch />
+
+      </div>
 
     </aside>
   )

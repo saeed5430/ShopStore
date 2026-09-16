@@ -18,7 +18,7 @@ export default function ProductCard({
   product,
 }: ProductCardProps) {
 
-  const [quantity, setQuantity] = useState(1)
+  const [quantity, setQuantity] = useState(0)
 
 
   return (
@@ -135,53 +135,58 @@ export default function ProductCard({
         </dl>
 
 
-        <div className="mt-3 flex w-full items-center justify-between">
+        {quantity === 0 ? (
 
           <Button
             type="button"
-            variant="outline"
-            size="icon"
-            aria-label="کاهش تعداد"
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+            onClick={() => setQuantity(1)}
+            className="mt-3 w-full px-4 py-2 hover:bg-primary/90"
           >
 
-            <Minus />
+            <ShoppingBasket data-icon="inline-start" />
+
+            افزودن به سبد خرید
 
           </Button>
 
-          <span
-            aria-live="polite"
-            className="min-w-[3rem] text-center font-bold text-gray-900"
-          >
-            {quantity}
-          </span>
+        ) : (
 
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label="افزایش تعداد"
-            onClick={() => setQuantity(quantity + 1)}
-          >
+          <div className="mt-3 flex w-full items-center justify-between">
 
-            <Plus />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="کاهش تعداد"
+              onClick={() => setQuantity(quantity - 1)}
+            >
 
-          </Button>
+              <Minus />
 
-        </div>
+            </Button>
 
+            <span
+              aria-live="polite"
+              className="min-w-[3rem] text-center font-bold text-gray-900"
+            >
+              {quantity}
+            </span>
 
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="افزایش تعداد"
+              onClick={() => setQuantity(quantity + 1)}
+            >
 
-        <Button
-          type="button"
-          className="mt-3 w-full px-4 py-2 hover:bg-primary/90"
-        >
+              <Plus />
 
-          <ShoppingBasket data-icon="inline-start" />
+            </Button>
 
-          افزودن به سبد خرید
+          </div>
 
-        </Button>
+        )}
 
 
       </div>
