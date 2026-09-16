@@ -94,6 +94,18 @@ export default function ProductCard({
         }
 
 
+        <span className="flex items-center gap-2 text-sm text-gray-500">
+
+          <span
+            className="inline-block size-4 rounded-full border border-gray-300"
+            style={{ backgroundColor: product.color }}
+          />
+
+          {product.size}
+
+        </span>
+
+
 
         <button
           type="button"

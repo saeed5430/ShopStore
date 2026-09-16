@@ -19,6 +19,14 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     image = serializers.SerializerMethodField()
 
+    color = serializers.CharField(
+        source="color.hex_code"
+    )
+
+    size = serializers.CharField(
+        source="size.value"
+    )
+
 
     class Meta:
 

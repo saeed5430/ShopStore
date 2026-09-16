@@ -5,6 +5,8 @@ export interface Product {
   category: string
   image: string | null
   price: number | null
+  color: string
+  size: string
 }
 export interface PaginatedProducts {
   count: number
