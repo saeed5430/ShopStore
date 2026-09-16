@@ -9,9 +9,9 @@ import ProductGrid from "@/components/shop/ProductGrid"
 import ProductPagination from "@/components/shop/ProductPagination"
 import ProductToolbar from "@/components/shop/ProductToolbar"
 
-import { getCategories, getProducts } from "@/services/api"
+import { getCategories, getProducts, getColors, getPriceRange } from "@/services/api"
 
-import type { Product, Category } from "@/types/product"
+import type { Product, Category, SwatchColor, PriceRange } from "@/types/product"
 
 
 const PAGE_SIZE = 9
@@ -25,6 +25,14 @@ export default function ShopPage() {
   const [price, setPrice] = useState("default")
 
   const [categories, setCategories] = useState<Category[]>([])
+
+  const [colors, setColors] = useState<SwatchColor[]>([])
+
+  const [priceRange, setPriceRange] = useState<PriceRange | null>(null)
+
+  const [priceFilter, setPriceFilter] = useState<[number, number] | null>(null)
+
+  const [selectedColors, setSelectedColors] = useState<string[]>([])
 
   const [page, setPage] = useState(1)
 
@@ -40,21 +48,29 @@ export default function ShopPage() {
 
 
 
-  // Fetch categories
+  // Fetch categories, colors, price range
   useEffect(() => {
 
-    const fetchCategories = async () => {
+    const fetchFilters = async () => {
 
       try {
 
-        const data = await getCategories()
+        const [categoriesData, colorsData, priceRangeData] = await Promise.all([
+          getCategories(),
+          getColors(),
+          getPriceRange(),
+        ])
 
-        setCategories(data)
+        setCategories(categoriesData)
+
+        setColors(colorsData)
+
+        setPriceRange(priceRangeData)
 
       } catch (error) {
 
         console.error(
-          "Failed to fetch categories:",
+          "Failed to fetch filters:",
           error
         )
 
@@ -63,7 +79,7 @@ export default function ShopPage() {
     }
 
 
-    fetchCategories()
+    fetchFilters()
 
   }, [])
 
@@ -84,7 +100,10 @@ export default function ShopPage() {
           category !== ALL ? category : undefined,
           price !== "default"
             ? price as "cheap" | "expensive"
-            : undefined
+            : undefined,
+          priceFilter?.[0],
+          priceFilter?.[1],
+          selectedColors.length > 0 ? selectedColors.join(",") : undefined
         )
 
 
@@ -116,7 +135,7 @@ export default function ShopPage() {
     fetchProducts()
 
 
-  }, [page, category, price])
+  }, [page, category, price, priceFilter, selectedColors])
 
 
 
@@ -140,11 +159,33 @@ export default function ShopPage() {
 
 
 
+  const handlePriceCommit = (range: [number, number]) => {
+
+    setPriceFilter(range)
+
+    setPage(1)
+
+  }
+
+
+  const handleColorsChange = (selected: string[]) => {
+
+    setSelectedColors(selected)
+
+    setPage(1)
+
+  }
+
+
   const handleClearAll = () => {
 
     setCategory(ALL)
 
     setPrice("default")
+
+    setPriceFilter(null)
+
+    setSelectedColors([])
 
     setPage(1)
 
@@ -170,7 +211,13 @@ export default function ShopPage() {
           <FilterSidebar
             category={category}
             categories={categories}
+            colors={colors}
+            priceRange={priceRange}
+            priceFilter={priceFilter}
+            selectedColors={selectedColors}
             onCategoryChange={handleCategoryChange}
+            onPriceCommit={handlePriceCommit}
+            onColorsChange={handleColorsChange}
             onClearAll={handleClearAll}
           />
 

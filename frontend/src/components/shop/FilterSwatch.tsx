@@ -3,32 +3,25 @@ import { Check } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+import type { SwatchColor } from "@/types/product"
 
-type SwatchColor = {
-  hex: string
-  name: string
-}
 
 type FilterSwatchProps = {
-  colors?: SwatchColor[]
+  colors: SwatchColor[]
+  value?: string[]
   onChange?: (selected: string[]) => void
 }
 
 
-const FALLBACK_COLORS: SwatchColor[] = [
-  { hex: "#C0C0C0", name: "نقره‌ای" },
-  { hex: "#FFD700", name: "طلایی" },
-  { hex: "#000000", name: "مشکی" },
-  { hex: "#B76E79", name: "رزگلد" },
-]
-
-
 export default function FilterSwatch({
-  colors = FALLBACK_COLORS,
+  colors,
+  value,
   onChange,
 }: FilterSwatchProps) {
 
-  const [selected, setSelected] = useState<string[]>([])
+  const [internal, setInternal] = useState<string[]>([])
+
+  const selected = value ?? internal
 
 
   const toggle = (hex: string) => {
@@ -36,7 +29,7 @@ export default function FilterSwatch({
       ? selected.filter((item) => item !== hex)
       : [...selected, hex]
 
-    setSelected(next)
+    setInternal(next)
     onChange?.(next)
   }
 

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 import type { LoginData, RegisterData , AuthResponse} from '../types/auth'
-import type { PaginatedProducts , Category } from '../types/product'
+import type { PaginatedProducts , Category , SwatchColor , PriceRange } from '../types/product'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000',
@@ -47,13 +47,19 @@ export const refreshToken = async (): Promise<AuthResponse> => {
 export const getProducts = async (
   page: number = 1,
   category?: string,
-  price?: "cheap" | "expensive"
+  price?: "cheap" | "expensive",
+  min_price?: number,
+  max_price?: number,
+  color?: string
 ): Promise<PaginatedProducts> => {
 
   const params: {
     page: number
     category?: string
     price?: "cheap" | "expensive"
+    min_price?: number
+    max_price?: number
+    color?: string
   } = {
     page,
   }
@@ -62,6 +68,15 @@ export const getProducts = async (
   }
   if (price) {
     params.price = price
+  }
+  if (min_price !== undefined) {
+    params.min_price = min_price
+  }
+  if (max_price !== undefined) {
+    params.max_price = max_price
+  }
+  if (color) {
+    params.color = color
   }
   const response = await api.get(
     "/api/productions/products/",
@@ -75,6 +90,20 @@ export const getProducts = async (
 export const getCategories = async (): Promise<Category[]> => {
   const response = await api.get(
     '/api/productions/categories/'
+  )
+  return response.data
+}
+
+export const getColors = async (): Promise<SwatchColor[]> => {
+  const response = await api.get(
+    '/api/productions/colors/'
+  )
+  return response.data
+}
+
+export const getPriceRange = async (): Promise<PriceRange> => {
+  const response = await api.get(
+    '/api/productions/price-range/'
   )
   return response.data
 }

@@ -4,13 +4,19 @@ import FilterCategory from "@/components/shop/FilterCategory"
 import PriceRangeSlider from "@/components/shop/PriceRangeSlider"
 import FilterSwatch from "@/components/shop/FilterSwatch"
 
-import type { Category } from "@/types/product"
+import type { Category, PriceRange, SwatchColor } from "@/types/product"
 
 
 type FilterSidebarProps = {
   category: string
   categories: Category[]
+  colors: SwatchColor[]
+  priceRange: PriceRange | null
+  priceFilter: [number, number] | null
+  selectedColors: string[]
   onCategoryChange: (value: string) => void
+  onPriceCommit: (range: [number, number]) => void
+  onColorsChange: (selected: string[]) => void
   onClearAll: () => void
 }
 
@@ -18,7 +24,13 @@ type FilterSidebarProps = {
 export default function FilterSidebar({
   category,
   categories,
+  colors,
+  priceRange,
+  priceFilter,
+  selectedColors,
   onCategoryChange,
+  onPriceCommit,
+  onColorsChange,
   onClearAll,
 }: FilterSidebarProps) {
 
@@ -52,9 +64,21 @@ export default function FilterSidebar({
           onChange={onCategoryChange}
         />
 
-        <PriceRangeSlider />
+        {priceRange && (
+          <PriceRangeSlider
+            key={`${priceRange.min_price}-${priceRange.max_price}`}
+            min={priceRange.min_price}
+            max={priceRange.max_price}
+            value={priceFilter ?? undefined}
+            onCommit={onPriceCommit}
+          />
+        )}
 
-        <FilterSwatch />
+        <FilterSwatch
+          colors={colors}
+          value={selectedColors}
+          onChange={onColorsChange}
+        />
 
       </div>
 

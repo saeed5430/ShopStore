@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider"
 type PriceRangeSliderProps = {
   min?: number
   max?: number
+  value?: [number, number]
   onCommit?: (range: [number, number]) => void
 }
 
@@ -17,10 +18,11 @@ const formatFa = (value: number) =>
 export default function PriceRangeSlider({
   min = 0,
   max = 2_000_000,
+  value,
   onCommit,
 }: PriceRangeSliderProps) {
 
-  const [range, setRange] = useState<[number, number]>([min, max])
+  const [range, setRange] = useState<[number, number]>(value ?? [min, max])
 
 
   return (

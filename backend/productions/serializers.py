@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ProductVariant , Category
+from .models import ProductVariant , Category , Color
 
 
 class ProductListSerializer(serializers.ModelSerializer):
@@ -69,5 +69,23 @@ class CategoryListSerializer(serializers.ModelSerializer):
 
         fields = [
             "id",
+            "name",
+        ]
+
+class ColorListSerializer(serializers.ModelSerializer):
+
+    hex = serializers.CharField(
+        source="hex_code"
+    )
+
+    name = serializers.CharField(
+        source="name_fa"
+    )
+
+    class Meta:
+        model = Color
+
+        fields = [
+            "hex",
             "name",
         ]

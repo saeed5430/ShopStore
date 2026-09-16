@@ -20,3 +20,13 @@ export interface Category {
   id: number
   name: string
 }
+
+export interface SwatchColor {
+  hex: string
+  name: string
+}
+
+export interface PriceRange {
+  min_price: number
+  max_price: number
+}
