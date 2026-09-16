@@ -1,6 +1,8 @@
-import { Heart, ShoppingBag } from "lucide-react"
+import { useState } from "react"
+import { Heart, Minus, Plus, ShoppingBasket } from "lucide-react"
 
 import { formatPrice } from "@/data/home"
+import { Button } from "@/components/ui/button"
 
 import type { Product } from "@/types/product"
 
@@ -16,10 +18,12 @@ export default function ProductCard({
   product,
 }: ProductCardProps) {
 
+  const [quantity, setQuantity] = useState(1)
+
 
   return (
 
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white font-fa shadow-sm transition-shadow hover:shadow-md">
 
 
       <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-gray-50">
@@ -94,29 +98,90 @@ export default function ProductCard({
         }
 
 
-        <span className="flex items-center gap-2 text-sm text-gray-500">
+        <dl className="mt-2 grid gap-2 text-sm">
+
+          <div className="flex items-center gap-2">
+
+            <dt className="text-xs text-muted-foreground">
+              رنگ:
+            </dt>
+
+            <dd className="flex items-center gap-1.5 text-gray-900">
+
+              <span
+                aria-hidden="true"
+                className="inline-block size-5 rounded-full border border-gray-300"
+                style={{ backgroundColor: product.color }}
+              />
+
+              {product.color_name}
+
+            </dd>
+
+          </div>
+
+          <div className="flex items-center gap-2">
+
+            <dt className="text-xs text-muted-foreground">
+              سایز:
+            </dt>
+
+            <dd className="text-gray-900">
+              {product.size}
+            </dd>
+
+          </div>
+
+        </dl>
+
+
+        <div className="mt-3 flex w-full items-center justify-between">
+
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="کاهش تعداد"
+            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+          >
+
+            <Minus />
+
+          </Button>
 
           <span
-            className="inline-block size-4 rounded-full border border-gray-300"
-            style={{ backgroundColor: product.color }}
-          />
+            aria-live="polite"
+            className="min-w-[3rem] text-center font-bold text-gray-900"
+          >
+            {quantity}
+          </span>
 
-          {product.size}
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="افزایش تعداد"
+            onClick={() => setQuantity(quantity + 1)}
+          >
 
-        </span>
+            <Plus />
+
+          </Button>
+
+        </div>
 
 
 
-        <button
+        <Button
           type="button"
-          className="mt-auto flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-black px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+          className="mt-3 w-full px-4 py-2 hover:bg-primary/90"
         >
 
-          <ShoppingBag className="size-4" />
+          <ShoppingBasket data-icon="inline-start" />
 
           افزودن به سبد خرید
 
-        </button>
+        </Button>
 
 
       </div>

@@ -23,6 +23,10 @@ class ProductListSerializer(serializers.ModelSerializer):
         source="color.hex_code"
     )
 
+    color_name = serializers.CharField(
+        source="color.name_fa"
+    )
+
     size = serializers.CharField(
         source="size.value"
     )
@@ -40,6 +44,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "image",
             "price",
             "color",
+            "color_name",
             "size",
         ]
 

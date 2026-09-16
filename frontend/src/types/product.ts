@@ -6,6 +6,7 @@ export interface Product {
   image: string | null
   price: number | null
   color: string
+  color_name: string
   size: string
 }
 export interface PaginatedProducts {
